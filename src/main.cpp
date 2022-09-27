@@ -58,10 +58,22 @@ void setup() {
 #endif
 
     magellan.setAuth(CONFIG_THING_IDENTIFY, CONFIG_THING_SECRET, CONFIG_THING_TOKEN, CONFIG_THING_NAME);
-    magellan.addControlSensorHandle("relay1", [](JsonVariant value) {
+    magellan.addControlSensorHandle("CH1", [](JsonVariant value) {
         int value_i = value.as<int>();
         Serial.printf("Relay1 is %d\n", value_i);
         digitalWrite(BUILTIN_LED, value_i);
+    });
+    magellan.addControlSensorHandle("CH2", [](JsonVariant value) {
+        int value_i = value.as<int>();
+        Serial.printf("Relay2 is %d\n", value_i);
+    });
+    magellan.addControlSensorHandle("CH3", [](JsonVariant value) {
+        int value_i = value.as<int>();
+        Serial.printf("Relay3 is %d\n", value_i);
+    });
+    magellan.addControlSensorHandle("CH4", [](JsonVariant value) {
+        int value_i = value.as<int>();
+        Serial.printf("Relay4 is %d\n", value_i);
     });
 }
 
