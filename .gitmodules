@@ -1,3 +1,6 @@
 [submodule "lib/AIS_IoT_4G"]
 	path = lib/AIS_IoT_4G
 	url = https://github.com/gravitech-engineer/AIS_IoT_4G.git
+[submodule "lib/ArtronShop_Magellan"]
+	path = lib/ArtronShop_Magellan
+	url = https://github.com/ArtronShop/ArtronShop_Magellan.git
