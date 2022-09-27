@@ -7,8 +7,6 @@
 #include <Wire.h>
 #include "Configs.h"
 
-#define BUILTIN_LED (15)
-
 #if defined(USE_WIFI)
 WiFiClient espClient;
 ArtronShop_Magellan magellan(&espClient);
