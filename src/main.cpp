@@ -84,9 +84,13 @@ void loop() {
         if (!magellan.connect()) {
             Serial.println("Connect to Magellan fail !");
 #ifdef USE_4G
-            uint8_t simcom_work = true;
+            uint8_t simcom_work = false;
             for (uint8_t i=0;i<5;i++) {
-                simcom_work = simcom_work && GSM.AT();
+                if (GSM.AT()) {
+                    simcom_work = true;
+                    break;
+                }
+                delay(100);
             }
             if (!simcom_work) {
                 // TODO: Hard reset SIMCOM module
