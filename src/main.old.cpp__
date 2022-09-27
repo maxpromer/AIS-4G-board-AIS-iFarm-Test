@@ -1,0 +1,138 @@
+#include <Arduino.h>
+#include <WiFi.h>
+#include <PubSubClient.h>
+#include <Wire.h>
+#include <SHT40.h>
+
+#define BUILTIN_LED (15)
+
+const char* ssid = "GLABWiFi";
+const char* password = "123456789";
+// const char* mqtt_server = "119.31.104.1";
+//const char* mqtt_server = "magellan.ais.co.th"; // Magellan Production for maker
+const char* mqtt_server = "119.31.104.48"; // Magellan Production for Enterprise
+/*
+const char *mag_user = "2565032200000000000";  // ICCID (Thing identify)
+const char *mag_Pass = "256522000000000";  // IMSI (Thing Secret)
+const char *mag_thingtoken = "a5e5506d-cffb-4702-9a4b-15dfa1f3a3f3";
+const char *mag_thing_name = "poc25_GVT";
+*/
+const char *mag_user = "145682546465415615548799664464";  // ICCID (Thing identify)
+const char *mag_Pass = "444444555666666";                 // IMSI (Thing Secret)
+const char *mag_thingtoken = "7b6ddf68-e2b6-467f-805e-3cd3c5ad1199";
+const char *mag_thing_name = "TestDevice17895EWEWE";
+
+WiFiClient espClient;
+PubSubClient client(espClient);
+unsigned long lastMsg = 0;
+int value = 0;
+
+void setup_wifi() {
+
+  delay(10);
+  // We start by connecting to a WiFi network
+  Serial.println();
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  randomSeed(micros());
+
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+}
+
+void callback(char* topic, byte* payload, unsigned int length) {
+  Serial.print("Message arrived [");
+  Serial.print(topic);  // ข้อมูล TOPIC ที่ส่วกลับมาจะเป็น TOPIC ที่ Subcribe ไว้ delta/get/{Thing Token}/ชื่อที่Subscribe
+  Serial.print("] ");
+  for (int i = 0; i < length; i++) {
+    Serial.print((char)payload[i]);  // Value ของชื่อที่Subscribe จะเป็นรูปแบบ 1 และ 0
+  }
+  Serial.println();
+
+  // Switch on the LED if an 1 was received as first character
+  if ((char)payload[0] == '1') {
+    digitalWrite(BUILTIN_LED, LOW);   // Turn the LED on (Note that LOW is the voltage level
+    // but actually the LED is on; this is because
+    // it is active low on the ESP-01)
+  } else {
+    digitalWrite(BUILTIN_LED, HIGH);  // Turn the LED off by making the voltage HIGH
+  }
+
+}
+
+void reconnect() {
+  // Loop until we're reconnected
+  while (!client.connected()) {
+    Serial.print("Attempting MQTT connection...");
+    // Create a random client ID
+    String clientId = "ESP8266Client-";
+    clientId += String(random(0xffff), HEX);
+    // Attempt to connect
+    if (client.connect(mag_thing_name,mag_user, mag_Pass)) { 
+      Serial.println("connected");
+      // Once connected, publish an announcement...
+      // Topic ที่ใช้ Public ส่งข้อมูลขึ้น MGL คือ 
+      // report sensor to magellan
+      /*
+      String topicReport = "api/v2/thing/"+ String(mag_thingtoken) +"/report/persist";
+      String payload = "{\"hello\":\"world\"}";
+      client.publish(topicReport.c_str(), payload.c_str());
+      */
+      // ... and resubscribe
+      // Topic ที่ใช้ Subscribe คือ 
+      // subscribe control
+      String topicDelta = "api/v2/thing/"+ String(mag_thingtoken) +"/delta/resp";
+      client.subscribe(topicDelta.c_str()); 
+    } else {
+      Serial.print("failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 5 seconds");
+      // Wait 5 seconds before retrying
+      delay(5000);
+    }
+  }
+}
+
+void setup() {
+  pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
+  Serial.begin(115200);
+  Wire.begin();
+  SHT40.begin();
+  setup_wifi();
+  client.setServer(mqtt_server, 1883);
+  client.setCallback(callback);
+}
+
+void loop() {
+
+  if (!client.connected()) {
+    reconnect();
+  }
+  client.loop();
+
+  unsigned long now = millis();
+  if (now - lastMsg > 5000) {
+    lastMsg = now;
+    ++value;
+    String topicReport = "api/v2/thing/"+ String(mag_thingtoken) +"/report/persist";
+    String payload =  "{"
+                      "\"Temperature\": " + String(SHT40.readTemperature()) + ", "
+                      "\"Humidity\": " + String(SHT40.readHumidity()) + ", "
+                      "\"Soil Moisture\": 74.1, "
+                      "\"Light\": 65412"
+                      "}";
+    Serial.printf("[%s]: %s\n", topicReport.c_str(), payload.c_str());
+    client.publish(topicReport.c_str(), payload.c_str());
+  }
+}

@@ -1,0 +1,3 @@
+[submodule "lib/AIS_IoT_4G"]
+	path = lib/AIS_IoT_4G
+	url = https://github.com/gravitech-engineer/AIS_IoT_4G.git
