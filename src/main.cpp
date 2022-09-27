@@ -81,7 +81,19 @@ void loop() {
         }
         magellan.loop();
     } else {
-        magellan.connect();
+        if (!magellan.connect()) {
+            Serial.println("Connect to Magellan fail !");
+#ifdef USE_4G
+            uint8_t simcom_work = true;
+            for (uint8_t i=0;i<5;i++) {
+                simcom_work = simcom_work && GSM.AT();
+            }
+            if (!simcom_work) {
+                // TODO: Hard reset SIMCOM module
+                ESP.restart();
+            }
+#endif
+        }
     }
     delay(10);
 }
