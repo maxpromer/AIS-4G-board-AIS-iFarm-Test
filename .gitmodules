@@ -4,3 +4,6 @@
 [submodule "lib/ArtronShop_Magellan"]
 	path = lib/ArtronShop_Magellan
 	url = https://github.com/ArtronShop/ArtronShop_Magellan.git
+[submodule "lib/PCA9557-arduino"]
+	path = lib/PCA9557-arduino
+	url = https://github.com/maxpromer/PCA9557-arduino.git
