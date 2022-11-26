@@ -28,10 +28,20 @@ PCA9557 io(0x19, &Wire);
 #define D2_PIN (0) // !!! WARNING: D1 on schematic = D2 on board label
 
 // Relay output pin
-#define C1_PIN (4)
-#define C2_PIN (5)
-#define C3_PIN (6)
-#define C4_PIN (7)
+// #define C1_PIN (4)
+// #define C2_PIN (5)
+// #define C3_PIN (6)
+// #define C4_PIN (7)
+#define C1_PIN (7) // !!! WARNING: C4 on schematic = C1 on board label
+#define C2_PIN (6) // !!! WARNING: C3 on schematic = C2 on board label
+#define C3_PIN (5) // !!! WARNING: C2 on schematic = C3 on board label
+#define C4_PIN (4) // !!! WARNING: C1 on schematic = C4 on board label
+
+#include <BH1750.h>
+BH1750 lightMeter;
+
+#include <uFire_SHT20.h>
+uFire_SHT20 sht20;
 #endif
 
 void setup() {
@@ -50,6 +60,10 @@ void setup() {
     io.pinMode(C2_PIN, OUTPUT);
     io.pinMode(C3_PIN, OUTPUT);
     io.pinMode(C4_PIN, OUTPUT);
+
+    // Sensor init
+    lightMeter.begin();
+    sht20.begin();
 #else
     SHT40.begin();
 #endif
@@ -130,10 +144,10 @@ void loop() {
             startTime = millis();
 
 #ifdef IFAMR_4G_BOARD
-            magellan.setSensorValue("Temperature", SHT40.readTemperature());
-            magellan.setSensorValue("Humidity", SHT40.readHumidity());
+            magellan.setSensorValue("Temperature", sht20.temperature());
+            magellan.setSensorValue("Humidity", sht20.humidity());
             magellan.setSensorValue("Soil Moisture", 74.1);
-            magellan.setSensorValue("Light", 65412);
+            magellan.setSensorValue("Light", lightMeter.readLightLevel());
             if (!magellan.pushData()) {
                 Serial.println("Magellan push data fail");
             }
