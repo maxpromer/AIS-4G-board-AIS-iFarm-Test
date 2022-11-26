@@ -7,3 +7,9 @@
 [submodule "lib/PCA9557-arduino"]
 	path = lib/PCA9557-arduino
 	url = https://github.com/maxpromer/PCA9557-arduino.git
+[submodule "lib/BH1750"]
+	path = lib/BH1750
+	url = https://github.com/claws/BH1750.git
+[submodule "lib/uFire_SHT20"]
+	path = lib/uFire_SHT20
+	url = https://github.com/u-fire/uFire_SHT20.git
